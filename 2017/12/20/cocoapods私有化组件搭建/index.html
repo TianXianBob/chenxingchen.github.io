@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+
+    
+
+    <title>
+       | bob的技术博客 
+    </title>
+
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+    
+      <meta name="author" content="bob">
+    
+    
+
+    <meta name="description" content="cocoaPods私有库——打造专属的公共组建平台下面是我通过GitHub来创建私有的pods的具体步骤。 创建两个git仓库个人练手的话比较推荐GitHub做我们的服务器，当然项目是public状态的。如果你想创建私有仓库，可以通过GitHub，GitLab来创建私有仓库。两个仓库分别作为私有的Spec Repo和公共组件。我的sepc repo为名为bobrepo的仓库我的公共组建仓库为名为b">
+<meta property="og:type" content="article">
+<meta property="og:title" content=" | bob的技术博客">
+<meta property="og:url" content="https://TianXianBob.github.io/2017/12/20/cocoapods私有化组件搭建/index.html">
+<meta property="og:site_name" content="bob的技术博客">
+<meta property="og:description" content="cocoaPods私有库——打造专属的公共组建平台下面是我通过GitHub来创建私有的pods的具体步骤。 创建两个git仓库个人练手的话比较推荐GitHub做我们的服务器，当然项目是public状态的。如果你想创建私有仓库，可以通过GitHub，GitLab来创建私有仓库。两个仓库分别作为私有的Spec Repo和公共组件。我的sepc repo为名为bobrepo的仓库我的公共组建仓库为名为b">
+<meta property="og:locale" content="zh-cn">
+<meta property="og:image" content="https://tianxianbob.github.io/2017/12/20/cocoapods私有化组件搭建/DraggedImage.png">
+<meta property="og:updated_time" content="2017-12-20T02:08:14.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content=" | bob的技术博客">
+<meta name="twitter:description" content="cocoaPods私有库——打造专属的公共组建平台下面是我通过GitHub来创建私有的pods的具体步骤。 创建两个git仓库个人练手的话比较推荐GitHub做我们的服务器，当然项目是public状态的。如果你想创建私有仓库，可以通过GitHub，GitLab来创建私有仓库。两个仓库分别作为私有的Spec Repo和公共组件。我的sepc repo为名为bobrepo的仓库我的公共组建仓库为名为b">
+<meta name="twitter:image" content="https://tianxianbob.github.io/2017/12/20/cocoapods私有化组件搭建/DraggedImage.png">
+    
+    
+    
+      <link rel="icon" type="image/x-icon" href="/favicon.png">
+    
+    <link rel="stylesheet" href="/css/uno.css">
+    <link rel="stylesheet" href="/css/highlight.css">
+    <link rel="stylesheet" href="/css/archive.css">
+    <link rel="stylesheet" href="/css/china-social-icon.css">
+
+</head>
+<body>
+
+    <span class="mobile btn-mobile-menu">
+        <i class="icon icon-list btn-mobile-menu__icon"></i>
+        <i class="icon icon-x-circle btn-mobile-close__icon hidden"></i>
+    </span>
+
+    
+
+<header class="panel-cover panel-cover--collapsed">
+
+
+  <div class="panel-main">
+
+  
+    <div class="panel-main__inner panel-inverted">
+    <div class="panel-main__content">
+
+        
+        <a href="/" title="link to homepage for bob的技术博客"><img src="/avatar.png" width="80" alt="bob的技术博客 logo" class="panel-cover__logo logo" /></a>
+        
+
+        <h1 class="panel-cover__title panel-title"><a href="/" title="link to homepage">bob的技术博客</a></h1>
+        <hr class="panel-cover__divider" />
+
+        
+        <p class="panel-cover__description">
+          Stay Hungry ！ Stay Foolish！
+        </p>
+        <hr class="panel-cover__divider panel-cover__divider--secondary" />
+        
+
+        <div class="navigation-wrapper">
+
+          <nav class="cover-navigation cover-navigation--primary">
+            <ul class="navigation">
+
+              
+                
+                <li class="navigation__item"><a href="/#blog" title="" class="blog-button">首页</a></li>
+              
+                
+                <li class="navigation__item"><a href="/about" title="" class="">个人介绍</a></li>
+              
+                
+                <li class="navigation__item"><a href="/archive" title="" class="">归档</a></li>
+              
+
+            </ul>
+          </nav>
+
+          <!-- ----------------------------
+To add a new social icon simply duplicate one of the list items from below
+and change the class in the <i> tag to match the desired social network
+and then add your link to the <a>. Here is a full list of social network
+classes that you can use:
+
+    icon-social-500px
+    icon-social-behance
+    icon-social-delicious
+    icon-social-designer-news
+    icon-social-deviant-art
+    icon-social-digg
+    icon-social-dribbble
+    icon-social-facebook
+    icon-social-flickr
+    icon-social-forrst
+    icon-social-foursquare
+    icon-social-github
+    icon-social-google-plus
+    icon-social-hi5
+    icon-social-instagram
+    icon-social-lastfm
+    icon-social-linkedin
+    icon-social-medium
+    icon-social-myspace
+    icon-social-path
+    icon-social-pinterest
+    icon-social-rdio
+    icon-social-reddit
+    icon-social-skype
+    icon-social-spotify
+    icon-social-stack-overflow
+    icon-social-steam
+    icon-social-stumbleupon
+    icon-social-treehouse
+    icon-social-tumblr
+    icon-social-twitter
+    icon-social-vimeo
+    icon-social-xbox
+    icon-social-yelp
+    icon-social-youtube
+    icon-social-zerply
+    icon-mail
+
+-------------------------------->
+
+<!-- add social info here -->
+
+
+
+<nav class="cover-navigation navigation--social">
+  <ul class="navigation">
+
+    
+      <!-- Github -->
+      <li class="navigation__item">
+        <a href="https://github.com/tianxianbob" title="Huno on GitHub">
+          <i class='icon icon-social-github'></i>
+          <span class="label">GitHub</span>
+        </a>
+      </li>
+    
+
+    <!-- China social icon -->
+    <!--
+    
+      <li class="navigation__item">
+        <a href="" title="">
+          <i class='icon cs-icon-douban'></i>
+          <span class="label">Douban</span>
+        </a>
+      </li>
+
+      <li class="navigation__item">
+        <a href="" title="">
+          <i class='icon cs-icon-weibo'></i>
+          <span class="label">Weibo</span>
+        </a>
+      </li>
+
+    -->
+
+
+
+  </ul>
+</nav>
+
+
+
+        </div>
+
+      </div>
+
+    </div>
+
+    <div class="panel-cover--overlay"></div>
+  </div>
+</header>
+
+    <div class="content-wrapper">
+        <div class="content-wrapper__inner entry">
+            
+
+<article class="post-container post-container--single">
+
+  <header class="post-header">
+     <h1 id="About"><a href="#About" class="headerlink" title="About"></a>Hello..This is Bob</h1>
+     <p> 记录iOS学习的点滴<br> 研究开源技术，分享技术干货与心得</p>
+     <p>- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -</p>
+<hr>
+<h2 id="Contact"><a href="#Contact" class="headerlink" title="Contact"></a>Contact</h2><br><p> 🐧：438622459<br> Mail：bobcxc@163.com</p>
+    
+
+    <div class="post-meta">
+      <time datetime="2017-12-20" class="post-meta__date date">2017-12-20</time> 
+
+      <span class="post-meta__tags tags">
+
+          
+
+          
+
+      </span>
+    </div>
+    
+    
+
+  </header>
+
+  <section id="post-content" class="article-content post">
+    <h1 id="cocoaPods私有库——打造专属的公共组建平台"><a href="#cocoaPods私有库——打造专属的公共组建平台" class="headerlink" title="cocoaPods私有库——打造专属的公共组建平台"></a>cocoaPods私有库——打造专属的公共组建平台</h1><p>下面是我通过GitHub来创建私有的pods的具体步骤。</p>
+<h3 id="创建两个git仓库"><a href="#创建两个git仓库" class="headerlink" title="创建两个git仓库"></a><em>创建两个git仓库</em></h3><p>个人练手的话比较推荐GitHub做我们的服务器，当然项目是public状态的。如果你想创建私有仓库，可以通过GitHub，GitLab来创建私有仓库。<br>两个仓库分别作为私有的Spec Repo和公共组件。<br>我的sepc repo为名为bobrepo的仓库<br>我的公共组建仓库为名为bobcomponents的仓库<br>Spec Repo的本质是一个存储pods的文件夹。“他是所有的Pods的一个索引，就是一个容器，所有公开的Pods都在这个里面，他实际是一个Git仓库remote端。<br>在GitHub上，当你使用了Cocoapods后他会被clone到本地的/.cocoapods/repos目录下，可以进入到这个目录看到master文件夹就是这个官方的Spec Repo了。”</p>
+<hr>
+<h3 id="添加私有仓库到cocoapods"><a href="#添加私有仓库到cocoapods" class="headerlink" title="添加私有仓库到cocoapods"></a><em>添加私有仓库到cocoapods</em></h3><p>打开终端<br>添加私有库到cocoapod具体的命令如下<br><code>$ pod repo add REPONAME  SOURCEURL</code><br>REPONAME ：私有仓库的名字（起的简明易懂点在后面还会用到）<br>SOURCEURL：在GitHub上所创建的<br>我的REPONAME命名为bobChan，SOURCEURL为<a href="https://github.com/TianXianBob/bobrepo.git" target="_blank" rel="external">https://github.com/TianXianBob/bobrepo.git</a><br>    $  pod repo add bobChan <a href="https://github.com/TianXianBob/bobrepo.git" target="_blank" rel="external">https://github.com/TianXianBob/bobrepo.git</a><br>    Cloning spec repo <code>bobChan</code> from <code>https://github.com/TianXianBob/bobrepo.git</code><br>    $  ls ~/.cocoapods/repos<br>    bobChan           master</p>
+<h2 id="可以看到bobChan被成功clone到本地。"><a href="#可以看到bobChan被成功clone到本地。" class="headerlink" title="可以看到bobChan被成功clone到本地。"></a>可以看到bobChan被成功clone到本地。</h2><h3 id="克隆组件仓库到本地"><a href="#克隆组件仓库到本地" class="headerlink" title="克隆组件仓库到本地"></a><em>克隆组件仓库到本地</em></h3><p>在我的demo中我将bobcomponents组件库克隆到本地<br>命令行克隆<br>    $  git clone <a href="https://github.com/TianXianBob/bobcomponents" target="_blank" rel="external">https://github.com/TianXianBob/bobcomponents</a><br>或者通过sourceTree</p>
+<h2 id=""><a href="#" class="headerlink" title=""></a><img src="/2017/12/20/cocoapods私有化组件搭建/DraggedImage.png" alt=""></h2><h3 id="制作组件podspec"><a href="#制作组件podspec" class="headerlink" title="制作组件podspec"></a><em>制作组件podspec</em></h3><p>我们在克隆下来的bobcomponents文件夹中创建一个bobcomponents.podspec<br>注意：文件名务必和组件项目名一致<br>下面是一份模板，可按照下面的进行修改<br><em>注意</em>的是:  spec.source_files 这一项如果不为空，那么对应文件夹不能为空<br>    Pod::Spec.new do |spec|</p>
+<pre><code>#项目名称
+spec.name         = &apos;bobcomponents&apos;
+#版本号
+spec.version      = &apos;0.1.1&apos;
+#开源协议
+spec.license      = &apos;MIT&apos;
+#对开源项目的描述
+spec.summary      = &apos;bobcomponents is a request util based on AFNetworking&apos;
+#开源项目的首页
+spec.homepage     = &apos;https://github.com/TianXianBob/bobcomponents&apos;
+#作者信息
+spec.author       = {&apos;bob&apos; =&gt; &apos;bobcxc@163.com&apos;}
+#项目的源和版本号
+spec.source       = { :git =&gt; &apos;https://github.com/TianXianBob/bobcomponents.git&apos;, :tag =&gt; &apos;0.1.1&apos; }
+#源文件，这个就是供第三方使用的源文件
+spec.source_files = &quot;source/*&quot;
+#适用于ios7及以上版本
+spec.platform     = :ios, &apos;7.0&apos;
+#使用的是ARC
+spec.requires_arc = true
+#依赖AFNetworking2.0
+#spec.dependency &apos;AFNetworking&apos;, &apos;~&gt; 2.0&apos;
+end
+</code></pre><h2 id="注意-在podspec文件中所写的版本号需要和github上的分支名一致。"><a href="#注意-在podspec文件中所写的版本号需要和github上的分支名一致。" class="headerlink" title="注意 在podspec文件中所写的版本号需要和github上的分支名一致。"></a><em>注意</em> 在podspec文件中所写的版本号需要和github上的分支名一致。</h2><h3 id="验证并推送到服务器"><a href="#验证并推送到服务器" class="headerlink" title="验证并推送到服务器"></a><em>验证并推送到服务器</em></h3><p>验证<br>    $  pod lib lint<br>    -&gt; bobcomponents (0.1.1)</p>
+<pre><code>bobcomponents passed validation.
+</code></pre><p><em>注意</em>：验证的时候，会获取BGNetwork.podspec文件中的spec.source来获取git服务器上面对应版本的代码，然后再找到spec.source_files中的源代码，通过xcode命令行工具建立工程并且进行编译。所以这一步的过程会比较久，如果编译没有错误，就验证通过。</p>
+<p>推送<br>    $  pod repo push REPO_NAME SPEC_NAME.podspec<br>    Validating spec<br>     -&gt; bobcomponents (0.1.1)</p>
+<pre><code>Updating the `bobChan&apos; repo
+
+Your configuration specifies to merge with the ref &apos;refs/heads/master&apos;
+from the remote, but no such ref was fetched.
+
+Adding the spec to the `bobChan&apos; repo
+
+ - [Add] bobcomponents (0.1.1)
+
+Pushing the `bobChan&apos; repo
+</code></pre><p>REPO_NAME:我这里是bobChan<br>SPEC_NAME.podspec:我这里是bobcomponents.podspec</p>
+<h2 id="如果没有错误，但是有警告，我们就将警告解决，也可以加—allow-warnings来提交"><a href="#如果没有错误，但是有警告，我们就将警告解决，也可以加—allow-warnings来提交" class="headerlink" title="如果没有错误，但是有警告，我们就将警告解决，也可以加—allow-warnings来提交"></a>如果没有错误，但是有警告，我们就将警告解决，也可以加<em>—allow-warnings</em>来提交</h2><h3 id="搜索我们的组件"><a href="#搜索我们的组件" class="headerlink" title="搜索我们的组件"></a><em>搜索我们的组件</em></h3><pre><code>$  pod search bobcomponents
+-&gt; bobcomponents (0.1.1)
+   bobcomponents is a request util based on AFNetworking
+   pod &apos;bobcomponents&apos;, &apos;~&gt; 0.1.1&apos;
+   - Homepage: https://github.com/TianXianBob/bobcomponents
+   - Source:   https://github.com/TianXianBob/bobcomponents.git
+   - Versions: 0.1.1 [bobChan repo]
+</code></pre><p>如果出现组件的信息就说明我们已经成功搭建自己的组件仓库了！</p>
+<p>以上是我的一些经验之谈，欢迎指正。</p>
+<p>最后感谢一下这位大佬的详细教程<br><a href="#">[http://www.liuchungui.com/blog/2015/10/19/cocoapodschuang-jian-si-you-pods/]</a></p>
+
+  </section>
+
+  <section class="post-comments">
+
+    <!-- 将评论系统（例如Disqus、多说、友言、畅言等）提供的代码片段粘贴在这里 -->
+    <div id="disqus_thread"></div>
+<script>
+
+/**
+*  RECOMMENDED CONFIGURATION VARIABLES: EDIT AND UNCOMMENT THE SECTION BELOW TO INSERT DYNAMIC VALUES FROM YOUR PLATFORM OR CMS.
+*  LEARN WHY DEFINING THESE VARIABLES IS IMPORTANT: https://disqus.com/admin/universalcode/#configuration-variables*/
+/*
+var disqus_config = function () {
+this.page.url = PAGE_URL;  // Replace PAGE_URL with your page's canonical URL variable
+this.page.identifier = PAGE_IDENTIFIER; // Replace PAGE_IDENTIFIER with your page's unique identifier variable
+};
+*/
+(function() { // DON'T EDIT BELOW THIS LINE
+var d = document, s = d.createElement('script');
+s.src = 'https://tianxianbob.disqus.com/embed.js';
+s.setAttribute('data-timestamp', +new Date());
+(d.head || d.body).appendChild(s);
+})();
+</script>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+                            
+    
+</section>
+
+</article>
+
+
+
+            <footer class="footer">
+
+    <span class="footer__copyright">&copy; 2014-2015. | bob的主题博客 | 主题<a href="https://github.com/someus/huno">Huno</a></span>
+    
+</footer>
+        </div>
+    </div>
+
+    <!-- js files -->
+    <script src="/js/jquery.min.js"></script>
+    <script src="/js/main.js"></script>
+    <script src="/js/scale.fix.js"></script>
+    
+
+    
+
+    <script type="text/javascript" src="//cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript"> 
+        $(document).ready(function(){
+            MathJax.Hub.Config({ 
+                tex2jax: {inlineMath: [['[latex]','[/latex]'], ['\\(','\\)']]} 
+            });
+        });
+    </script>
+
+
+    
+
+    <script src="/js/awesome-toc.min.js"></script>
+    <script>
+        $(document).ready(function(){
+            $.awesome_toc({
+                overlay: true,
+                contentId: "post-content",
+            });
+        });
+    </script>
+
+
+    <script type="text/javascript">var cnzz_protocol = (("https:" == document.location.protocol) ? " https://" : " http://");document.write(unescape("%3Cspan id='cnzz_stat_icon_1263648552'%3E%3C/span%3E%3Cscript src='" + cnzz_protocol + "s19.cnzz.com/z_stat.php%3Fid%3D1263648552' type='text/javascript'%3E%3C/script%3E"));</script>
+    
+    <!--kill ie6 -->
+<!--[if IE 6]>
+  <script src="//letskillie6.googlecode.com/svn/trunk/2/zh_CN.js"></script>
+<![endif]-->
+
+</body>
+</html>
