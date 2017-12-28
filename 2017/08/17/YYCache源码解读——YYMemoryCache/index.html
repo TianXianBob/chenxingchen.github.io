@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<meta charset="utf-8">
+		<link rel="stylesheet" type="text/css" href="css/style.css">
+		<title>YYCache源码解读——YYMemoryCache</title>
+	</head>
+<body>
+<h1>YYCache源码解读——YYMemoryCache</h1>
+
+<p><a href="https://github.com/ibireme/YYCache" target="_blank" rel="external">YYCache</a>是一个强大的内存缓存和磁盘缓存的一个缓存库。</p>
+
+<p>首先我们了解一下什么是缓存：<strong>内存缓存</strong>,<strong>磁盘缓存</strong>。</p>
+
+<p><strong>内存缓存</strong>：内存缓存容量小速度快。相对于磁盘缓存来说，内存缓存的设计要更简单些。</p>
+
+<p><strong>磁盘缓存</strong>：磁盘缓存容量大速度慢可持久化。</p>
+
+<p>YYMemoryCache是内存缓存的一个缓存库，缓存内部用双向链表和 NSDictionary 实现了 LRU 淘汰算法。</p>
+
+<p>设计：在YYMemoryCache中，实现了三个类。<em>YYLinkedMapNode，</em>YYLinkedMap，YYMemoryCache。</p>
+
+<p><em>YYLinkedMap ：一个双向的链表类，实现了链表的增删移动操作。</em></p>
+
+<p><em>YYLinkedMapNode：双向链表的节点类。</em></p>
+
+<p>YYMemoryCache：调度和控制缓存。</p>
+
+<p>下面我们来看看YYMemoryCache类</p>
+
+<pre><code>#pragma mark - Attribute
+@property (nullable, copy) NSString *name;//没什么用
+@property (readonly) NSUInteger totalCount;//缓存的object数量
+@property (readonly) NSUInteger totalCost;//缓存cost总数
+#pragma mark - Limit
+@property NSUInteger countLimit;//设置cache缓存object数量的最大值，超过就会采用LRU来清除后面的，直到的totalCount &lt;= countLimit
+@property NSUInteger costLimit;//设置缓存cost的最大值，如果没有单独设置每个object的cost，那么这个并没有什么用处，因为每个object的cost默认为0。处理方式同countLimit。
+@property NSTimeInterval ageLimit;//设置存活时间。每个object写入的时候,和读取的时候，都会有一个相应的时间更新为当前时间，当currentTime － objectTime &gt; ageLimit,都会被清除，处理方式同countLimit。
+@property NSTimeInterval autoTrimInterval;//定期清理缓存时间，默认为5秒。清理规则是上面的三个limit。
+@property BOOL shouldRemoveAllObjectsOnMemoryWarning;//当接收到来自系统的内存警告时，是否要清除所有缓存，默认是 YES。建议使用默认。
+@property BOOL shouldRemoveAllObjectsWhenEnteringBackground;//当进入后台的时候是否要清除所有缓存，默认是 YES。建议使用默认。
+@property (nullable, copy) void(^didReceiveMemoryWarningBlock)(YYMemoryCache *cache);//内存警告时的block
+@property (nullable, copy) void(^didEnterBackgroundBlock)(YYMemoryCache *cache);//进入后台时的block
+@property BOOL releaseOnMainThread;//是否在主线程释放节点内存，默认为NO,也就是默认在后台释放内存(hold ,than release)。
+@property BOOL releaseAsynchronously;//和releaseOnMainThread相反。
+
+#pragma mark - Access Methods
+- (BOOL)containsObjectForKey:(id)key;//是否存储了某个key
+- (nullable id)objectForKey:(id)key;//获取object
+- (void)setObject:(nullable id)object forKey:(id)key;//写入object
+- (void)setObject:(nullable id)object forKey:(id)key withCost:(NSUInteger)cost;//写入object，并且设置每个object的cost
+- (void)removeObjectForKey:(id)key;//删除某个object
+- (void)removeAllObjects;//清空缓存
+#pragma mark - Trim 根据limit规则来截取移除
+- (void)trimToCount:(NSUInteger)count;//根据object数量来移除
+- (void)trimToCost:(NSUInteger)cost;//根据cost数量来移除。
+- (void)trimToAge:(NSTimeInterval)age;//根据存活时间来移除。
+</code></pre>
+
+<p>下面是私有属性</p>
+
+<pre><code>@implementation YYMemoryCache {
+pthread_mutex_t _lock;//互斥锁，保证线程安全，对于所有的属性和方法
+_YYLinkedMap *_lru;//处理层类。处理链表操作
+dispatch_queue_t _queue;//串联队列，
+}
+</code></pre>
+
+<p><em>YYLinkedMap（链表操作）</em></p>
+
+<pre><code>@interface _YYLinkedMap : NSObject {
+@package
+CFMutableDictionaryRef _dic; // 用来存储节点
+NSUInteger _totalCost;//
+NSUInteger _totalCount;//
+_YYLinkedMapNode *_head; // MRU, 链表头节点
+_YYLinkedMapNode *_tail; // LRU, 链表尾节点。链表会在这个_YYLinkedMap形成。
+BOOL _releaseOnMainThread;
+BOOL _releaseAsynchronously;
+}
+- (void)insertNodeAtHead:(_YYLinkedMapNode *)node;//在链表的head之前添加节点，如果head == nil,则head ＝ node。也就是Cache写入一个object。
+- (void)bringNodeToHead:(_YYLinkedMapNode *)node;//把node移到head。也就是Cache读取一个object，或则从新设置key_vale的时候。
+- (void)removeNode:(_YYLinkedMapNode *)node;//删除一个节点，也就时Cache移除一个object
+- (_YYLinkedMapNode *)removeTailNode;
+- (_YYLinkedMapNode *)removeTailNode;//根据那三个limit规则来移除节点
+- (void)removeAll;//清空所有节点
+</code></pre>
+
+<p><em>YYLinkedMapNode</em></p>
+
+<pre><code>@interface _YYLinkedMapNode : NSObject {
+@package
+__unsafe_unretained _YYLinkedMapNode *_prev; //前驱指针
+__unsafe_unretained _YYLinkedMapNode *_next; // 后驱指针，__unsafe_unretained 用这个是防止node在写入的时候被retain 而导致删除的时候无法清除被retain的内存。
+id _key;
+id _value;
+NSUInteger _cost;//每个节点的cost
+NSTimeInterval _time;//修改时间
+}
+</code></pre>
+
+<p>实现流程</p>
+
+<p>1.存储一个object的流程。主要是处理存储，和根据limit规则来移除。</p>
+
+<pre><code>- (void)setObject:(nullable id)object forKey:(id)key;
+｜
+  [self setObject:object forKey:key withCost:0];
+｜
+- (void)setObject:(id)object forKey:(id)key withCost:(NSUInteger)cost {
+if (!key) return;
+if (!object) {
+    [self removeObjectForKey:key];
+    return;
+}
+pthread_mutex_lock(&amp;_lock);//线程安全
+_YYLinkedMapNode *node = CFDictionaryGetValue(_lru-&gt;_dic, (__bridge const void *)(key));//先判断有没有这个key_node
+NSTimeInterval now = CACurrentMediaTime();
+if (node) {
+    _lru-&gt;_totalCost -= node-&gt;_cost;
+    _lru-&gt;_totalCost += cost;
+    node-&gt;_cost = cost;
+    node-&gt;_time = now;
+    node-&gt;_value = object;
+    [_lru bringNodeToHead:node];//如果字典中有这个key_node 则从新赋值，并移到head前面
+} else {
+    node = [_YYLinkedMapNode new];
+    node-&gt;_cost = cost;
+    node-&gt;_time = now;
+    node-&gt;_key = key;
+    node-&gt;_value = object;
+    [_lru insertNodeAtHead:node];//如果没有则添加到head前面
+}
+if (_lru-&gt;_totalCost &gt; _costLimit) {
+    //根据_costLimit来移除
+    dispatch_async(_queue, ^{
+        [self trimToCost:_costLimit];
+    });
+}
+if (_lru-&gt;_totalCount &gt; _countLimit) {
+    ////根据_countLimit来移除
+    _YYLinkedMapNode *node = [_lru removeTailNode];
+  //如果前面的_YYLinkedMapNode 没有用__unsafe_unretained，则这里移除的时候，只能把字典里的node移除，node里的pre和next 还会再写入的时候被retain，无法被移除。 
+    if (_lru-&gt;_releaseAsynchronously) {
+        dispatch_queue_t queue = _lru-&gt;_releaseOnMainThread ? dispatch_get_main_queue() : YYMemoryCacheGetReleaseQueue();
+        dispatch_async(queue, ^{
+            [node class]; //tip，异步移除
+        });
+    } else if (_lru-&gt;_releaseOnMainThread &amp;&amp; !pthread_main_np()) {
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [node class]; //hold and release in queue
+        });
+    }
+}
+pthread_mutex_unlock(&amp;_lock);
+}
+</code></pre>
+
+<p>2.如果字典中有这个key<em>node 则从新赋值，并移到head前面</em></p>
+
+<pre><code>- (void)bringNodeToHead:(_YYLinkedMapNode *)node {
+if (_head == node) return;//
+
+if (_tail == node) {
+  //如果node是尾部，则改变尾部，并且连好
+    _tail = node-&gt;_prev;
+    _tail-&gt;_next = nil;
+} else {
+  //如果不是尾部，则要把之前node 前后连个节点重新连好
+    node-&gt;_next-&gt;_prev = node-&gt;_prev;
+    node-&gt;_prev-&gt;_next = node-&gt;_next;
+}
+  //改变head并且连好
+node-&gt;_next = _head;
+node-&gt;_prev = nil;
+_head-&gt;_prev = node;
+_head = node;
+}
+</code></pre>
+
+<p>3.如果没有则添加到head前面</p>
+
+<pre><code>- (void)insertNodeAtHead:(_YYLinkedMapNode *)node {
+CFDictionarySetValue(_dic, (__bridge const void *)(node-&gt;_key), (__bridge const void *)(node));//set 字典 key_node
+_totalCost += node-&gt;_cost;
+_totalCount++;
+//如果head存在 ，则连好head 和 node 并重新赋值head。如果不存在，则head＝tail＝node。
+if (_head) {
+    node-&gt;_next = _head;
+    _head-&gt;_prev = node;
+    _head = node;
+} else {
+    _head = _tail = node;
+}
+}
+</code></pre>
+
+<p>4.移除一个object的流程。</p>
+
+<pre><code>- (void)removeObjectForKey:(id)key;
+｜
+- (void)removeObjectForKey:(id)key {
+if (!key) return;
+pthread_mutex_lock(&amp;_lock);//线程安全
+_YYLinkedMapNode *node = CFDictionaryGetValue(_lru-&gt;_dic, (__bridge const void *)(key));//获取key_node，and hold to release
+if (node) {
+    [_lru removeNode:node];//链表移除操作
+    if (_lru-&gt;_releaseAsynchronously) {
+        dispatch_queue_t queue = _lru-&gt;_releaseOnMainThread ? dispatch_get_main_queue() : YYMemoryCacheGetReleaseQueue();
+        dispatch_async(queue, ^{
+            [node class]; //tip，异步移除。
+        });
+    } else if (_lru-&gt;_releaseOnMainThread &amp;&amp; !pthread_main_np()) {
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [node class]; //tip，异步移除
+        });
+    }
+}
+pthread_mutex_unlock(&amp;_lock);
+}
+</code></pre>
+
+<p>5.移除节点</p>
+
+<pre><code>- (void)removeNode:(_YYLinkedMapNode *)node {
+CFDictionaryRemoveValue(_dic, (__bridge const void *)(node-&gt;_key));//字典移除key_node
+_totalCost -= node-&gt;_cost;
+_totalCount--;
+//重新连好node 前后两个节点，if存在。如果head＝node，则重新赋值head。如果tail＝node，则重新赋值tail。
+if (node-&gt;_next) node-&gt;_next-&gt;_prev = node-&gt;_prev;
+if (node-&gt;_prev) node-&gt;_prev-&gt;_next = node-&gt;_next;
+if (_head == node) _head = node-&gt;_next;
+if (_tail == node) _tail = node-&gt;_prev;
+}
+</code></pre>
+
+<p>6.limit规则。单独抽取ageLimit来讲</p>
+
+<pre><code>- (void)_trimToAge:(NSTimeInterval)ageLimit {
+BOOL finish = NO;
+NSTimeInterval now = CACurrentMediaTime();//当前时间
+pthread_mutex_lock(&amp;_lock);//线程安全
+//如果ageLimit，则清除全部。如果最后一个的时间规则都不成立， 则不用清
+if (ageLimit &lt;= 0) {
+    [_lru removeAll];
+    finish = YES;
+} else if (!_lru-&gt;_tail || (now - _lru-&gt;_tail-&gt;_time) &lt;= ageLimit) {
+    finish = YES;
+}
+pthread_mutex_unlock(&amp;_lock);
+if (finish) return;//返回
+  //while 循环 来清除最后一个，直到最后一个limit时间规则不成立，并且异步释放。中间用的pthread_mutex_trylock，如果不能锁就继续其他任务usleep(10 * 1000)。
+NSMutableArray *holder = [NSMutableArray new];
+while (!finish) {
+    if (pthread_mutex_trylock(&amp;_lock) == 0) {
+        if (_lru-&gt;_tail &amp;&amp; (now - _lru-&gt;_tail-&gt;_time) &gt; ageLimit) {
+            _YYLinkedMapNode *node = [_lru removeTailNode];
+            if (node) [holder addObject:node];
+        } else {
+            finish = YES;
+        }
+        pthread_mutex_unlock(&amp;_lock);
+    } else {
+        usleep(10 * 1000); //10 ms
+    }
+}
+if (holder.count) {
+    dispatch_queue_t queue = _lru-&gt;_releaseOnMainThread ? dispatch_get_main_queue() : YYMemoryCacheGetReleaseQueue();
+    dispatch_async(queue, ^{
+        [holder count]; // tip，异步释放
+    });
+}
+}
+</code></pre>
+
+<p>7.清空缓存</p>
+
+<pre><code>- (void)removeAll {
+//这里并没有一个个的去清节点，而是直接把头尾置空，并且tip异步释放之前的子弹，然后重新创建一个新的字典。
+_totalCost = 0;
+_totalCount = 0;
+_head = nil;
+_tail = nil;
+if (CFDictionaryGetCount(_dic) &gt; 0) {
+    CFMutableDictionaryRef holder = _dic;
+    _dic = CFDictionaryCreateMutable(CFAllocatorGetDefault(), 0, &amp;kCFTypeDictionaryKeyCallBacks, &amp;kCFTypeDictionaryValueCallBacks);
+
+    if (_releaseAsynchronously) {
+        dispatch_queue_t queue = _releaseOnMainThread ? dispatch_get_main_queue() : YYMemoryCacheGetReleaseQueue();
+        dispatch_async(queue, ^{
+            CFRelease(holder); // hold and release in specified queue
+        });
+    } else if (_releaseOnMainThread &amp;&amp; !pthread_main_np()) {
+        dispatch_async(dispatch_get_main_queue(), ^{
+            CFRelease(holder); // hold and release in specified queue
+        });
+    } else {
+        CFRelease(holder);
+    }
+}
+}
+</code></pre>
+
+<p>8.系统内存警告和转入后台</p>
+
+<pre><code>- (instancetype)init {
+    //cache 初始化时添加通知
+  [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(_appDidReceiveMemoryWarningNotification) name:UIApplicationDidReceiveMemoryWarningNotification object:nil];
+  [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(_appDidEnterBackgroundNotification) name:UIApplicationDidEnterBackgroundNotification object:nil];
+}
+｜
+- (void)_appDidReceiveMemoryWarningNotification {
+if (self.didReceiveMemoryWarningBlock) {
+    self.didReceiveMemoryWarningBlock(self);
+}
+if (self.shouldRemoveAllObjectsOnMemoryWarning) {
+    [self removeAllObjects];
+}
+}
+
+- (void)_appDidEnterBackgroundNotification {
+if (self.didEnterBackgroundBlock) {
+    self.didEnterBackgroundBlock(self);
+}
+if (self.shouldRemoveAllObjectsWhenEnteringBackground) {
+    [self removeAllObjects];
+}
+}
+ ｜
+- (void)removeAllObjects {
+pthread_mutex_lock(&amp;_lock);
+[_lru removeAll];//清空缓存
+pthread_mutex_unlock(&amp;_lock);
+}
+</code></pre>
+
+<p>最后感谢一下<a href="http://aes.jypc.org/?p=18830" target="_blank" rel="external">http://aes.jypc.org/?p=18830</a></p>
+
+</body>
+</html>
+
