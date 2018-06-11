@@ -9,16 +9,16 @@ ga('create','UA-104109957-1','auto');ga('send','pageview');</script></head><body
 <li>点击按钮打开并监听App。</li>
 <li>设置监听结果的显示方式，通常只需要勾选Separate by Thread、Hide System Libraries。<br>Separate by Thread：监听结果按照线程划分。<br>Hide System Libraries： 勾选此项你会显示你app的代码,这是非常有用的. 因为通常你只关心cpu花在自己代码上的时间不是系统上的。<br>Invert Call Tree： 从上倒下跟踪堆栈,这意味着你看到的表中的方法,将       已从第0帧开始取样,这通常你是想要的,只有这样你才能看到CPU中话费时间最深的方法.也就是说FuncA{FunB{FunC}} 勾选此项后堆栈以C-&gt;B-A 把调用层级            最深的C显示在最外面。<br>Top Functions： 一个函数花费的时间直接在该函数中的总和，以及在函数调用该函数所花费的时间的总时间。因此，如果函数A调用B，那么A的时间报告在A花费的时间加上B花费的时间,这非常真有用，因为它可以让你每次下到调用堆栈时挑最大的时间数字，归零在你最耗时的方法。</li>
 </ol>
-<p><img src="/2018/06/04/[iOS]Time Profiler的使用/图1-1.png" alt="tp1"></p>
+<p><img src="/2018/06/04/[iOS]Time Profiler的使用/图1-1.png" alt=""></p>
 <h3 id="基本配置"><a href="#基本配置" class="headerlink" title="基本配置"></a>基本配置</h3><p>如果直接去监听App的话，并不能直接看到耗时的方法名。我们的应用在编译的时候，苹果会给我们生成一份叫做 “项目名.app.dSYM” 的文件，这份文件里保存了我们代码的行数以及我们写的函数的十六进制地址。也就是说，如果我们能拿到这份文件和函数的十六进制地址，我们就能去我们的代码里找到那个函数。</p>
 <ol>
-<li><p>配置项目scheme<br><img src="/2018/06/04/[iOS]Time Profiler的使用/图1-2.png" alt="2"></p>
+<li><p>配置项目scheme<br><img src="/2018/06/04/[iOS]Time Profiler的使用/图1-2.png" alt=""></p>
 </li>
-<li><p>配置project<br><img src="/2018/06/04/[iOS]Time Profiler的使用/图1-3.png" alt="3"></p>
+<li><p>配置project<br><img src="/2018/06/04/[iOS]Time Profiler的使用/图1-3.png" alt=""></p>
 </li>
 </ol>
-<h3 id="查看耗时函数"><a href="#查看耗时函数" class="headerlink" title="查看耗时函数"></a>查看耗时函数</h3><p>图标为黑色头像的就是Time Profiler给我们的提示，有可能存在性能瓶颈的地方，可以逐渐向下展开，找到产生的根本原因。<br><img src="/2018/06/04/[iOS]Time Profiler的使用/图1-4.png" alt="tp2"></p>
-<p>如果定位到了某个方法就可以右键，选择Reveal in Xcode去查看具体耗时的代码。<br><img src="/2018/06/04/[iOS]Time Profiler的使用/图1-5.png" alt="4"></p>
+<h3 id="查看耗时函数"><a href="#查看耗时函数" class="headerlink" title="查看耗时函数"></a>查看耗时函数</h3><p>图标为黑色头像的就是Time Profiler给我们的提示，有可能存在性能瓶颈的地方，可以逐渐向下展开，找到产生的根本原因。<br><img src="/2018/06/04/[iOS]Time Profiler的使用/图1-4.png" alt=""></p>
+<p>如果定位到了某个方法就可以右键，选择Reveal in Xcode去查看具体耗时的代码。<br><img src="/2018/06/04/[iOS]Time Profiler的使用/图1-5.png" alt=""></p>
 <p>参考链接：<br><a href="">https://www.jianshu.com/p/0fd670547235</a><br><a href="">http://www.cnblogs.com/ym123/p/4324335.html</a></p>
 </div><div class="tags"><a href="/tags/iOS/">iOS</a></div><div class="post-nav"><a class="next" href="/2017/12/16/毕业季的感受/">毕业季的感受</a></div><div id="disqus_thread"><div class="btn_click_load"><button class="disqus_click_btn">阅读评论 「请确保 disqus.com 可以正常加载」</button></div><script>var disqus_shortname = 'tianxianbob';
 var disqus_identifier = '2018/06/04/[iOS]Time Profiler的使用/';
