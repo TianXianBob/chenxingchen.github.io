@@ -1,0 +1,93 @@
+<!DOCTYPE html><html lang="zh-CN"><head><meta http-equiv="content-type" content="text/html; charset=utf-8"><meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" name="viewport"><meta content="yes" name="apple-mobile-web-app-capable"><meta content="black-translucent" name="apple-mobile-web-app-status-bar-style"><meta content="telephone=no" name="format-detection"><meta name="description" content="关于iOS及其他软件技术的交流博客"><title>HTTP和HTTPS的区别 | Bob的技术博客</title><link rel="stylesheet" type="text/css" href="/css/style.css?v=0.0.0"><link rel="stylesheet" type="text/css" href="//cdn.bootcss.com/normalize/7.0.0/normalize.min.css"><link rel="stylesheet" type="text/css" href="//cdn.bootcss.com/pure/1.0.0/pure-min.css"><link rel="stylesheet" type="text/css" href="//cdn.bootcss.com/pure/1.0.0/grids-responsive-min.css"><link rel="stylesheet" href="//cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css"><script type="text/javascript" src="//cdn.bootcss.com/jquery/3.2.1/jquery.min.js"></script><link rel="Shortcut Icon" type="image/x-icon" href="/favicon.ico"><link rel="apple-touch-icon" href="/apple-touch-icon.png"><link rel="apple-touch-icon-precomposed" href="/apple-touch-icon.png"><script>(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+ga('create','UA-104109957-1','auto');ga('send','pageview');</script></head><body><div class="body_container"><div id="header"><div class="site-name"><h1 class="hidden">HTTP和HTTPS的区别</h1><a id="logo" href="/.">Bob的技术博客</a><p class="description">Talk is cheap,Show me your code</p></div><div id="nav-menu"><a class="current" href="/."><i class="fa fa-home"> 首页</i></a><a href="/archives/"><i class="fa fa-archive"> 归档</i></a><a href="/about/"><i class="fa fa-user"> 关于</i></a><a href="/message/"><i class="fa fa-comment"> 留言</i></a></div></div><div class="pure-g" id="layout"><div class="pure-u-1 pure-u-md-3-4"><div class="content_container"><div class="post"><h1 class="post-title">HTTP和HTTPS的区别</h1><div class="post-meta">Nov 27, 2018<span> | </span><span class="category"><a href="/categories/技术/">技术</a></span></div><a class="disqus-comment-count" data-disqus-identifier="2018/11/27/HTTP和HTTPS的区别/" href="/2018/11/27/HTTP和HTTPS的区别/#disqus_thread"></a><div class="post-content"><p>HTTP协议（超文本传输协议）在近30年的发展中，让互联网从只属于少数人，到如今遍布全世界的每一个角落。但是在日常开发中我们可以发现，渐渐的我们的协议名从HTTP变成了HTTPS。什么是HTTP？HTTPS有哪些好处？HTTP和HTTPS究竟有着哪些区别？带着这些问题我们就开始分析吧。</p>
+<h4 id="什么是HTTP"><a href="#什么是HTTP" class="headerlink" title="什么是HTTP"></a>什么是HTTP</h4><p>首先我们要了解一下什么是HTTP。<br>HTTP通常被译为超文本传输协议。是Web从客户端到服务器端等一些列运作流程的规范。HTTP协议规定，请求从客户端发出，最后服务器端响应请求并返回。</p>
+<p>以下是HTTP中的一些比较重要的知识点。</p>
+<p><strong>HTTP是不保存状态的协议</strong><br>HTTP是不保存状态的协议，即无状态。HTTP协议本身不对请求和响应直接的通信状态进行保存。也就是说在HTTP这个级别，协议对发送过的请求或响应都不做持久化处理。</p>
+<p><strong>URI</strong><br>HTTP协议使用URI定位互联网上的资源。当客户端请求访问资源而发送请求时，URI需要将作为请求报文中的请求URI包含在内。</p>
+<p><strong>HTTP方法</strong><br>HTTP的方法名能明确的告诉服务器意图。</p>
+<ul>
+<li>GET : 获取资源</li>
+<li>POST : 传输实体主体</li>
+<li>PUT : 传输文件</li>
+<li>HEAD : 获得报文首部</li>
+<li>DELETE : 删除文件</li>
+<li>OPTIONS : 询问支持的方法</li>
+<li>TRACE : 追踪路径</li>
+<li>CONNECT : 要求用隧道来连接代理</li>
+</ul>
+<p><strong>持久连接（keep-alive）</strong><br>在初始的HTTP协议中，每进行一次HTTP通信就要断开一次TCP连接。当下随着HTTP的普及，文档中包含大资源的情况多了起来，这样TCP的连接和断开造成的开销就大了起来。<br>在HTTP/1.1中想出了持久连接。持久连接的特点是只要任意一方没有明确的提出断开连接，则不会断开TCP连接。在HTTP/1.1中，所有连接默认打开持久连接。</p>
+<p><strong>管线化</strong><br>持久连接让管线化成为可能。管线化是指，HTTP连接的发送端不用等待即可直接发送下一次请求。这样就能做到并行的去发送多个请求，而不用一个接一个的等待服务器端的响应。</p>
+<p><strong>Cookie做状态管理</strong><br>Cookie会根据服务器端报文中的Set-Cookie字段，通知客户端保存Cookie。当下次客户端再次发送请求的时候，客户端会自动在报文中加入Cookie值，服务器端接受到Cookie值后，会去检查究竟是哪一台服务器发送的连接请求，然后对比服务器上的记录，最后得出状态信息。</p>
+<p><strong><em>HTTP报文</em></strong><br>用于HTTP协议的交互信息叫做HTTP报文。大致可分为报文首部和报文主体两部分。两者用空行来划分（CR+LF）。通常不一定要有报文主体。</p>
+<p><strong>TCP三次握手建立连接</strong><br>为了准确无误的将数据传达到目标处，TCP采用了3次握手策略。用TCP协议把数据包送出去之后，TCP不会对传达后的情况置之不理，而是会向对方确认是否成功送达。握手策略用到TCP的标志——SYN和ACK。<br>发送端先发送一个带SYN的标志的数据包给对方，接受端收到后回传一个带有SYN/ACK标志的数据包以示传达确认信息。最后，发送端再回传一个带ACK标志的数据包，代表握手结束。</p>
+<h4 id="HTTP存在哪些缺点"><a href="#HTTP存在哪些缺点" class="headerlink" title="HTTP存在哪些缺点"></a>HTTP存在哪些缺点</h4><p>HTTP主要的缺点，例举如下。</p>
+<ul>
+<li>通信使用明文（如果不加密的话），内容可能会被窃听。</li>
+<li>不验证通信方的身份，因此有可能遭遇伪装。</li>
+<li>无法证明报文的完整性，所以有可能已经遭到篡改。</li>
+</ul>
+<p><strong>网络内容可能被窃听</strong><br>因为HTTP本身不具备加密功能，所以也就无法对报文的整体进行加密。也就是说HTTP报文是以明文传输的。<br>那么为什么明文传输是一个致命的缺陷呢？<br>因为按照TCP/IP协议族的工作机制。通信内容在所有的通信线路上都有可能遭到窥视。所谓的互联网其实就是连通到世界的网络组成的。无论世界上哪个角落的服务器在和客户通信时，在此通信线路上的某些网络设备，光缆，计算机等都不可能是单个人的私有物品，所以不排除某个环节有恶意的窥视行为。<br>即便是加密过信息，还是会被看到通信内容，只不过内容经过加密，看的人可能无法破解。但是报文本身还是会被看到的。<br>窃听相同段的通信也不是难事。只需要收集网络上的流动数据帧就好了。像WiresShark，Charles等都是被广泛使用的抓包工具。</p>
+<p><strong>不验证身份，可能遭遇伪装</strong><br>HTTP是不会对请求的发起方和响应方进行身份确认的，所以就会造成发起方接受到伪装服务器的响应，响应方接受到伪装客户端的请求的尴尬局面。正是由于HTTP协议中任意的客户端都可以发起网络请求，且服务器端接受到HTTP请求必然会进行应答。（当请求IP没有被过滤的前提下）<br>所以HTTP协议还是隐患重重:</p>
+<ul>
+<li>客户端发起网络请求，可能被伪装服务器截取信息。</li>
+<li>服务器端响应请求，响应信息也可能被伪装的客户端截取。</li>
+<li>无法认证身份，不能确定客户端是否有权限访问特定内容。</li>
+<li>无法判定请求方身份。</li>
+<li>服务器端不论是请求是否合法都会返回一个响应。Dos（denial of service），拒绝服务攻击。</li>
+</ul>
+<p><strong>无法确认报文的完整性</strong><br>通俗点来说就是无法确定接收方收到的报文是否和服务器端发送的一模一样。且即便被更改了，接受方是无法察觉的。<br>像这种在传输的途中遭到拦截并恶意篡改报文内容的行为叫做中间人攻击。</p>
+<h4 id="HTTP-加密-认证-完整性保护-HTTPS"><a href="#HTTP-加密-认证-完整性保护-HTTPS" class="headerlink" title="HTTP+加密+认证+完整性保护 = HTTPS"></a>HTTP+加密+认证+完整性保护 = HTTPS</h4><p>其实HTTPS（HTTP Secure）也就是针对HTTP最棘手的三个缺点进行优化。<br>HTTPS并不是一种新的协议。只是HTTP的通信接口部分由SSL（Secure Socket Layer）和TLS（Transform Layer Security）所代替。<br>从原来的HTTP直接和TCP通信转变为，HTTP先和SSL通信再由SSL和TCP进行通信。<br>采用了SSL之后，HTTP就有了加密、认证、完整性保护等功能了，且SSL是独立于HTTP的协议，所以他不仅仅在HTTP中可以使用在SMTP和Telnet中均可配合使用。SSL也是应用最广泛的网络安全技术。</p>
+<p>相对于HTTP的通信机制，HTTPS的更为复杂。<br>下面是完整的HTTPS通信机制。</p>
+<ol>
+<li>客户端发送Client Hello报文开始了SSL连接。报文中包含SSL在客户端支持的版本、加密组件列表。</li>
+<li>服务器可进行SSL通信时，会以Server Hello作为回报。和客户端一样，也会发送SSL版本及加密组件列表。其加密组件内容时根据客户端发送的筛选出来的。</li>
+<li>之后服务器发送Certificate报文。报文中包含公开密匙。</li>
+<li>最后服务器发送Server Hello Done，结束SSL握手协议协商部分。</li>
+<li>SSL第一次握手结束后，客户端一Client Key Exchange 报文作为回应。报文中包含通信加密中使用的一种被称为Pre-master secret的随机密码串。该报文已用公开密匙加密过。</li>
+<li>客户端继续发送Change Cipher Spec报文。报文会提示服务器，在此后的报文会采用Pre-master secret密匙加密。</li>
+<li>客户端发送Finished报文。该报文包含连接至今全部报文的整体校验值。致辞握手协商是否能成功，以服务器是否能正确解密该报文为判定标准。</li>
+<li>服务器同样发送Change Cipher Spec 报文。</li>
+<li>服务器同样发送Finished报文。</li>
+<li>客户端和服务器端交换Finished报文之后SSL连接完成。此处开始应用层的协议通信。</li>
+<li>发送HTTP响应</li>
+<li>最后由客户端断开连接。断开连接时发送close_notify报文。</li>
+</ol>
+<p>下面是HTTPS通信机制的图解:<br><img src="/2018/11/27/HTTP和HTTPS的区别/t1-1.jpeg" alt=""></p>
+<p>我将其简化成如下几个步骤:</p>
+<ol>
+<li>客户端将自己支持的加密算法发送给服务器，请求服务器证书。</li>
+<li>服务器选取一组加密算法，并将证书返回给客户端。</li>
+<li>客户端校验证书合法性，生成随机对称密钥，用公钥加密后发送给服务器。</li>
+<li>服务器用私钥解密出对称密钥，返回一个响应，HTTPS连接建立完成。</li>
+<li>随后双方通过这个对称密钥进行安全的数据通信。<br><img src="/2018/11/27/HTTP和HTTPS的区别/t1-2.png" alt=""></li>
+</ol>
+<p>==写在最后==<br>HTTPS固然是安全可靠的机制。但是也并是所有的请求都非要HTTPS不可。其加密通信相比于纯文本的HTTP是很耗CPU资源的，都用HTTPS的话那么服务器处理请求的能力会大大降低。<br>如果是非敏感信息的话用HTTP是再好不过了，只有包含个人信息等敏感数据时，利用HTTPS才显得格外重要。<br>特别是那些访问并发量很大的网站，服务器承载的负荷不容小觑。只有合理利用HTTP和HTTPS，才能更好的节约资源！</p>
+</div><div class="tags"><a href="/tags/网络/">网络</a></div><div class="post-nav"><a class="next" href="/2018/09/24/[iOS]RAC中的信号筛选操作/">RAC中的信号筛选操作</a></div><div id="disqus_thread"><div class="btn_click_load"><button class="disqus_click_btn">阅读评论 「请确保 disqus.com 可以正常加载」</button></div><script>var disqus_shortname = 'tianxianbob';
+var disqus_identifier = '2018/11/27/HTTP和HTTPS的区别/';
+var disqus_title = 'HTTP和HTTPS的区别';
+var disqus_url = 'https://TianXianBob.github.io/2018/11/27/HTTP和HTTPS的区别/';
+$('.btn_click_load').click(function() {
+  (function() {
+    var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+    dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+  })();
+  $('.btn_click_load').css('display','none');
+});
+$.ajax({
+  url: 'https://disqus.com/next/config.json',
+  timeout: 3000,
+  type: 'GET',
+  success: (function() {
+    var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+    dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    $('.btn_click_load').css('display','none');
+  })(),
+  error: function() {
+    $('.btn_click_load').css('display','block');
+  }
+});</script><script id="dsq-count-scr" src="//tianxianbob.disqus.com/count.js" async></script></div></div></div></div><div class="pure-u-1-4 hidden_mid_and_down"><div id="sidebar"><div class="widget"><form class="search-form" action="//www.google.com/search" method="get" accept-charset="utf-8" target="_blank"><input type="text" name="q" maxlength="20" placeholder="Search"/><input type="hidden" name="sitesearch" value="https://TianXianBob.github.io"/></form></div><div class="widget"><div class="widget-title"><i class="fa fa-folder-o"> 分类</i></div><ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/吐槽/">吐槽</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/技术/">技术</a></li></ul></div><div class="widget"><div class="widget-title"><i class="fa fa-star-o"> 标签</i></div><div class="tagcloud"><a href="/tags/网络/" style="font-size: 15px;">网络</a> <a href="/tags/iOS/" style="font-size: 15px;">iOS</a> <a href="/tags/随笔/" style="font-size: 15px;">随笔</a></div></div><div class="widget"><div class="widget-title"><i class="fa fa-file-o"> 最近文章</i></div><ul class="post-list"><li class="post-list-item"><a class="post-list-link" href="/2018/11/27/HTTP和HTTPS的区别/">HTTP和HTTPS的区别</a></li><li class="post-list-item"><a class="post-list-link" href="/2018/09/24/[iOS]RAC中的信号筛选操作/">RAC中的信号筛选操作</a></li><li class="post-list-item"><a class="post-list-link" href="/2018/09/04/[iOS]({…})语法的使用/">GCC Code Block Evaluation C Extension {...}的使用</a></li><li class="post-list-item"><a class="post-list-link" href="/2018/09/04/[iOS]Load 和 Initialize/">Load 和 Initialize</a></li><li class="post-list-item"><a class="post-list-link" href="/2018/09/04/[iOS]关于页面置换算法/">关于页面置换算法</a></li><li class="post-list-item"><a class="post-list-link" href="/2018/06/04/[iOS]Time Profiler的使用/">Time Profiler的使用</a></li><li class="post-list-item"><a class="post-list-link" href="/2017/12/16/毕业季的感受/">毕业季的感受</a></li></ul></div><div class="widget"><div class="widget-title"><i class="fa fa-comment-o"> 最近评论</i></div><script type="text/javascript" src="//tianxianbob.disqus.com/recent_comments_widget.js?num_items=5&amp;hide_avatars=1&amp;avatar_size=32&amp;excerpt_length=20&amp;hide_mods=1"></script></div><div class="widget"><div class="widget-title"><i class="fa fa-external-link"> 友情链接</i></div><ul></ul><a href="https://blog.ibireme.com/" title="郭曜源的博客" target="_blank">郭曜源的博客</a><ul></ul><a href="http://blog.sunnyxx.com/" title="sunny的博客" target="_blank">sunny的博客</a><ul></ul><a href="https://bestswifter.com/" title="张星宇的博客" target="_blank">张星宇的博客</a></div></div></div><div class="pure-u-1 pure-u-md-3-4"><div id="footer">Copyright © 2018 <a href="/." rel="nofollow">Bob的技术博客.</a> Powered by<a rel="nofollow" target="_blank" href="https://hexo.io"> Hexo.</a><a rel="nofollow" target="_blank" href="https://github.com/tufu9441/maupassant-hexo"> Theme</a> by<a rel="nofollow" target="_blank" href="https://github.com/pagecho"> Cho.</a></div></div></div><a class="show" id="rocket" href="#top"></a><script type="text/javascript" src="/js/totop.js?v=0.0.0" async></script><script type="text/javascript" src="//cdn.bootcss.com/fancybox/3.2.5/jquery.fancybox.min.js" async></script><script type="text/javascript" src="/js/fancybox.js?v=0.0.0" async></script><link rel="stylesheet" type="text/css" href="//cdn.bootcss.com/fancybox/3.2.5/jquery.fancybox.min.css"><script type="text/javascript" src="/js/codeblock-resizer.js?v=0.0.0"></script><script type="text/javascript" src="/js/smartresize.js?v=0.0.0"></script></div></body></html>
