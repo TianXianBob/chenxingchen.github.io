@@ -1,0 +1,90 @@
+<!DOCTYPE html><html lang="zh-CN"><head><meta http-equiv="content-type" content="text/html; charset=utf-8"><meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" name="viewport"><meta content="yes" name="apple-mobile-web-app-capable"><meta content="black-translucent" name="apple-mobile-web-app-status-bar-style"><meta content="telephone=no" name="format-detection"><meta name="description" content="关于iOS及其他软件技术的交流博客"><title>Appium在mac上的搭建 | Bob的技术博客</title><link rel="stylesheet" type="text/css" href="/css/style.css?v=0.0.0"><link rel="stylesheet" type="text/css" href="//cdn.bootcss.com/normalize/7.0.0/normalize.min.css"><link rel="stylesheet" type="text/css" href="//cdn.bootcss.com/pure/1.0.0/pure-min.css"><link rel="stylesheet" type="text/css" href="//cdn.bootcss.com/pure/1.0.0/grids-responsive-min.css"><link rel="stylesheet" href="//cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css"><script type="text/javascript" src="//cdn.bootcss.com/jquery/3.2.1/jquery.min.js"></script><link rel="Shortcut Icon" type="image/x-icon" href="/favicon.ico"><link rel="apple-touch-icon" href="/apple-touch-icon.png"><link rel="apple-touch-icon-precomposed" href="/apple-touch-icon.png"><script>(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+ga('create','UA-104109957-1','auto');ga('send','pageview');</script></head><body><div class="body_container"><div id="header"><div class="site-name"><h1 class="hidden">Appium在mac上的搭建</h1><a id="logo" href="/.">Bob的技术博客</a><p class="description">Talk is cheap,Show me your code</p></div><div id="nav-menu"><a class="current" href="/."><i class="fa fa-home"> 首页</i></a><a href="/archives/"><i class="fa fa-archive"> 归档</i></a><a href="/about/"><i class="fa fa-user"> 关于</i></a><a href="/message/"><i class="fa fa-comment"> 留言</i></a></div></div><div class="pure-g" id="layout"><div class="pure-u-1 pure-u-md-3-4"><div class="content_container"><div class="post"><h1 class="post-title">Appium在mac上的搭建</h1><div class="post-meta">Dec 1, 2018<span> | </span><span class="category"><a href="/categories/技术/">技术</a></span></div><a class="disqus-comment-count" data-disqus-identifier="2018/12/01/Appium在mac上的搭建/" href="/2018/12/01/Appium在mac上的搭建/#disqus_thread"></a><div class="post-content"><p>由于公司的App组没有测试，所以自动化测试的活当然也是开发做呀。好开心(😢)。下面是Appium在mac上的安装步骤。</p>
+<ul>
+<li>安装Nodejs</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">brew install node</div></pre></td></tr></table></figure>
+<ul>
+<li>安装JDK</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">brew cask install java</div></pre></td></tr></table></figure>
+<ul>
+<li>安装Appium</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">brew install -g appium</div></pre></td></tr></table></figure>
+<ul>
+<li><p>安装Appium-Desktop</p>
+<p><a href="https://github.com/appium/appium-desktop/releases" target="_blank" rel="external">appium-desktop</a></p>
+</li>
+<li><p>安装appium-doctor</p>
+</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">npm install -g appium-doctor</div></pre></td></tr></table></figure>
+<ul>
+<li>校验iOS环境</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">appium-doctor --ios</div></pre></td></tr></table></figure>
+<p><strong>真机测试配置</strong></p>
+<ul>
+<li>安装libimobiledevice，这是用于连接 iOS 设备的开源工具，类似于 Android 的 ADB</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">brew install libimobiledevice --HEAD</div></pre></td></tr></table></figure>
+<p>遇到一个问题:<br>==Flutter环境问题:Requested ‘libusbmuxd &gt;= 1.1.0’ but version of libusbmuxd is 1.0.10==<br>解决方案:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line">brew update</div><div class="line">brew uninstall --ignore-dependencies libimobiledevice</div><div class="line">brew uninstall --ignore-dependencies usbmuxd</div><div class="line">brew install --HEAD usbmuxd</div><div class="line">brew unlink usbmuxd</div><div class="line">brew link usbmuxd</div><div class="line">brew install --HEAD libimobiledevice</div></pre></td></tr></table></figure>
+<ul>
+<li>安装ios-deploy，这是支持使用命令行管理 iOS 设备 app 的工具</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">npm install -g ios-deploy</div></pre></td></tr></table></figure>
+<ul>
+<li><p>前往webDriverAgent目录<br>==/Applications/Appium.app/Contents/Resources/app/node_modules/appium/node_modules/appium-xcuitest-driver/WebDriverAgent==</p>
+<p>  1.修改bundle identify<br>  2.设置签名证书</p>
+<p>  打开工程TARGETS，选择WebDriverAgentLib-&gt;General，修改Bundle Identify<br>  <img src="/2018/12/01/Appium在mac上的搭建/Appium/1.jpg" alt=""><br>  选择IntegrationApp-&gt;General，修改Bundle Identify<br>  <img src="/2018/12/01/Appium在mac上的搭建/Appium/2.jpg" alt=""><br>  选择WebDriverAgentRunner-&gt;Build Settings，修改Bundle Identify<br>  <img src="/2018/12/01/Appium在mac上的搭建/Appium/4.jpg" alt=""></p>
+<p>  另外WebDriverAgentLib、IntegrationApp、WebDriverAgentRunner都需要设置签名证书</p>
+</li>
+<li><p>证书设置完之后，使用command+U运行WebDriverAgentRunner到真机上</p>
+</li>
+<li>运行完之后，真机上会多个WebDriverAgentRunner的App，App启动之后马上退出，这是正常的</li>
+<li><p>这个时候控制台输出<br>  <img src="/2018/12/01/Appium在mac上的搭建/Appium/5.jpg" alt=""></p>
+</li>
+<li><p>执行以下命令，将 iOS 设备上 WebDriverAgentRunner 监听的 8100 端口映射到 macOS 本地的 8100 端口</p>
+</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">iproxy 8100 8100 iOS设备udid</div></pre></td></tr></table></figure>
+<ul>
+<li><p>在浏览器输入==<a href="http://192.168.2.6:8100/status==可查看WebDriverAgentRunner的运行状态" target="_blank" rel="external">http://192.168.2.6:8100/status==可查看WebDriverAgentRunner的运行状态</a><br>  <img src="/2018/12/01/Appium在mac上的搭建/Appium/6.jpg" alt=""></p>
+</li>
+<li><p>设备上运行，设置Desired Capabilities<br>对应的设备名，bundleId，udid可以进行对应的更改</p>
+</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line">&#123;</div><div class="line">  &quot;platformName&quot;: &quot;ios&quot;,  // 平台</div><div class="line">  &quot;deviceName&quot;: &quot;iPhone 8&quot;, // 设备名</div><div class="line">  &quot;platformVersion&quot;: &quot;10.3.3&quot;, // 设备系统版本</div><div class="line">  &quot;bundleId&quot;: &quot;com.xxx.xxx&quot;, // App Bundle Identify</div><div class="line">  &quot;udid&quot;: &quot;ad7cda4b4e7e7201865f5420b340566dd256038e&quot; // 设备udid</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>成功界面<br><img src="/2018/12/01/Appium在mac上的搭建/Appium/7.jpg" alt=""></p>
+<p>参考链接<br><a href="https://www.jianshu.com/p/612c2fa1dbe9" target="_blank" rel="external">Appium for mac环境配置</a></p>
+</div><div class="tags"><a href="/tags/iOS/">iOS</a></div><div class="post-nav"><a class="next" href="/2018/11/27/HTTP和HTTPS的区别/">HTTP和HTTPS的区别</a></div><div id="disqus_thread"><div class="btn_click_load"><button class="disqus_click_btn">阅读评论 「请确保 disqus.com 可以正常加载」</button></div><script>var disqus_shortname = 'tianxianbob';
+var disqus_identifier = '2018/12/01/Appium在mac上的搭建/';
+var disqus_title = 'Appium在mac上的搭建';
+var disqus_url = 'https://TianXianBob.github.io/2018/12/01/Appium在mac上的搭建/';
+$('.btn_click_load').click(function() {
+  (function() {
+    var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+    dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+  })();
+  $('.btn_click_load').css('display','none');
+});
+$.ajax({
+  url: 'https://disqus.com/next/config.json',
+  timeout: 3000,
+  type: 'GET',
+  success: (function() {
+    var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+    dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    $('.btn_click_load').css('display','none');
+  })(),
+  error: function() {
+    $('.btn_click_load').css('display','block');
+  }
+});</script><script id="dsq-count-scr" src="//tianxianbob.disqus.com/count.js" async></script></div></div></div></div><div class="pure-u-1-4 hidden_mid_and_down"><div id="sidebar"><div class="widget"><form class="search-form" action="//www.google.com/search" method="get" accept-charset="utf-8" target="_blank"><input type="text" name="q" maxlength="20" placeholder="Search"/><input type="hidden" name="sitesearch" value="https://TianXianBob.github.io"/></form></div><div class="widget"><div class="widget-title"><i class="fa fa-folder-o"> 分类</i></div><ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/吐槽/">吐槽</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/技术/">技术</a></li></ul></div><div class="widget"><div class="widget-title"><i class="fa fa-star-o"> 标签</i></div><div class="tagcloud"><a href="/tags/网络/" style="font-size: 15px;">网络</a> <a href="/tags/iOS/" style="font-size: 15px;">iOS</a> <a href="/tags/随笔/" style="font-size: 15px;">随笔</a></div></div><div class="widget"><div class="widget-title"><i class="fa fa-file-o"> 最近文章</i></div><ul class="post-list"><li class="post-list-item"><a class="post-list-link" href="/2018/12/01/Appium在mac上的搭建/">Appium在mac上的搭建</a></li><li class="post-list-item"><a class="post-list-link" href="/2018/11/27/HTTP和HTTPS的区别/">HTTP和HTTPS的区别</a></li><li class="post-list-item"><a class="post-list-link" href="/2018/09/24/[iOS]RAC中的信号筛选操作/">RAC中的信号筛选操作</a></li><li class="post-list-item"><a class="post-list-link" href="/2018/09/04/[iOS]({…})语法的使用/">GCC Code Block Evaluation C Extension {...}的使用</a></li><li class="post-list-item"><a class="post-list-link" href="/2018/09/04/[iOS]Load 和 Initialize/">Load 和 Initialize</a></li><li class="post-list-item"><a class="post-list-link" href="/2018/09/04/[iOS]关于页面置换算法/">关于页面置换算法</a></li><li class="post-list-item"><a class="post-list-link" href="/2018/06/04/[iOS]Time Profiler的使用/">Time Profiler的使用</a></li><li class="post-list-item"><a class="post-list-link" href="/2017/12/16/毕业季的感受/">毕业季的感受</a></li></ul></div><div class="widget"><div class="widget-title"><i class="fa fa-comment-o"> 最近评论</i></div><script type="text/javascript" src="//tianxianbob.disqus.com/recent_comments_widget.js?num_items=5&amp;hide_avatars=1&amp;avatar_size=32&amp;excerpt_length=20&amp;hide_mods=1"></script></div><div class="widget"><div class="widget-title"><i class="fa fa-external-link"> 友情链接</i></div><ul></ul><a href="https://blog.ibireme.com/" title="郭曜源的博客" target="_blank">郭曜源的博客</a><ul></ul><a href="http://blog.sunnyxx.com/" title="sunny的博客" target="_blank">sunny的博客</a><ul></ul><a href="https://bestswifter.com/" title="张星宇的博客" target="_blank">张星宇的博客</a></div></div></div><div class="pure-u-1 pure-u-md-3-4"><div id="footer">Copyright © 2018 <a href="/." rel="nofollow">Bob的技术博客.</a> Powered by<a rel="nofollow" target="_blank" href="https://hexo.io"> Hexo.</a><a rel="nofollow" target="_blank" href="https://github.com/tufu9441/maupassant-hexo"> Theme</a> by<a rel="nofollow" target="_blank" href="https://github.com/pagecho"> Cho.</a></div></div></div><a class="show" id="rocket" href="#top"></a><script type="text/javascript" src="/js/totop.js?v=0.0.0" async></script><script type="text/javascript" src="//cdn.bootcss.com/fancybox/3.2.5/jquery.fancybox.min.js" async></script><script type="text/javascript" src="/js/fancybox.js?v=0.0.0" async></script><link rel="stylesheet" type="text/css" href="//cdn.bootcss.com/fancybox/3.2.5/jquery.fancybox.min.css"><script type="text/javascript" src="/js/codeblock-resizer.js?v=0.0.0"></script><script type="text/javascript" src="/js/smartresize.js?v=0.0.0"></script></div></body></html>
